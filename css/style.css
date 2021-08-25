@@ -1,4 +1,4 @@
-body {
+/* body {
   display: grid;
   grid-template-columns: 250px repeat(3, 300px);
   grid-template-rows: 70px 300px 60px 300px 70px;
@@ -113,4 +113,24 @@ ul li {
 
 #main-text {
   color: black;
+} */
+
+body {
+  width: 100vw;
+  height: 100vh;
+}
+
+#images {
+  width: 80%;
+  height: 20%;
+}
+
+#images img {
+  width: 33%;
+  height: 100%;
+}
+
+canvas {
+  width: 50vw;;
+  height: 50vh;
 }

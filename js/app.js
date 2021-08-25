@@ -1,177 +1,159 @@
-'use strict'
+'use strict';
 
-function round(value) {
-  let multiplier = Math.pow(10, 1);
-  return Math.round(value * multiplier) / multiplier;
-}
+let productOne = document.getElementById('images').children[0];
+let productTwo = document.getElementById('images').children[1];
+let productThree = document.getElementById('images').children[2];
+let totalClicks = 0;
+let maxClicks = 25;
+let allProducts = [];
+let indexArray = [];
+let imageCount = 6;
+let div = document.getElementById('images');
 
-function _createElement(element, parent) {
-  let newElement = document.createElement(element);
-  parent.appendChild(newElement);
-  return newElement;
-}
-
-function Product(name, imgPath) {
+function Product(name, fileExtension = 'jpg') {
   this.name = name;
-  this.imgPath = imgPath;
-  this.displayed = 0;
-  this.votedFor = 0;
-  this.id = Product.nextId;
-  Product.nextId++;
+  this.src = `../assets/${name}.${fileExtension}`;
+  this.views = 0;
+  this.clicks = 0;
+  allProducts.push(this);
 }
 
-function sortArray(array) {
-  array.sort(function(a,b) {
-    let aAvg = a.votedFor / a.displayed;
-    let bAvg = b.votedFor / b.displayed;
-    return bAvg - aAvg;
-  });
+new Product('bag');
+new Product('banana');
+new Product('bathroom');
+new Product('boots');
+new Product('breakfast');
+new Product('bubblegum');
+new Product('chair');
+new Product('cthulhu');
+new Product('dog-duck');
+new Product('dragon');
+new Product('pen');
+new Product('pet-sweep');
+new Product('scissors');
+new Product('shark');
+new Product('sweep', 'png');
+new Product('tauntaun');
+new Product('unicorn');
+new Product('water-can');
+new Product('wine-glass');
+
+function getRandom() {
+  return Math.floor(Math.random() * allProducts.length);
 }
 
-function toggleHidden(id) {
-  let element = document.getElementById(id);
-  element.classList.toggle('hidden');
+function assignImage(productElement, productIndex) {
+  productElement.src = allProducts[productIndex].src;
+  productElement.title = allProducts[productIndex].name;
+  allProducts[productIndex].views++;
 }
-
-function handleResultClick() {
-  toggleHidden("show-results");
-  toggleHidden("title");
-  toggleHidden("result-ul");
-  Product.renderResults();
-}
-
-function handleResults() {
-  toggleHidden("show-results");
-  let button = document.getElementById("show-results");
-  button.addEventListener('click', handleResultClick);
-}
-
-function handleClick() {
-  let productId = this.parentElement.id;
-  productId = parseInt(productId);
-  let images = document.getElementsByClassName("prod-img");
-  for (let i = 0; i < Product.products.length; i++) {
-    if (Product.products[i].id === productId) {
-      Product.products[i].votedFor++;
-      i = Product.products.length;
+function render() {
+  while (indexArray.length < imageCount) {
+    let random = getRandom();
+    while (!indexArray.includes(random)) {
+      indexArray.push(random);
     }
   }
-  for (let image of images) {
-    image.removeEventListener('click', handleClick);
+
+  let productOneIndex = indexArray.shift();
+  let productTwoIndex = indexArray.shift();
+  let productThreeIndex = indexArray.shift();
+
+  assignImage(productOne, productOneIndex);
+  assignImage(productTwo, productTwoIndex);
+  assignImage(productThree, productThreeIndex);
+}
+
+function handleImageClicks(e) {
+  if (e.target === div) {
+    alert('Please click on one of the images below.');
   }
-  Product.totalVotes++;
-  if (Product.totalVotes === Product.votesToComplete) {
-    handleResults();
-  } else {
-    Product.renderProducts();
+  totalClicks++;
+  let clickeditem = e.target.title;
+
+  for (let i = 0; i < allProducts.length; i++) {
+    if (clickeditem === allProducts[i].name) {
+      allProducts[i].clicks++;
+    }
+  }
+
+  render();
+  if (maxClicks === totalClicks) {
+    div.removeEventListener('click', handleImageClicks);
+    renderChart();
   }
 }
 
-Product.nextId = 0;
-Product.totalVotes = 0;
-Product.votesToComplete = 25;
-Product.products = [];
+div.addEventListener('click', handleImageClicks);
 
-Product.renderProducts = function() {
-  let productArray = this.getRandomProducts();
-  let i = 1;
-  for (let product of productArray) {
-    product.displayed++;
-    let productName = document.getElementById("prod-" + i + "-name");
-    let productImg = document.getElementById("prod-" + i + "-img");
-    productName.textContent = product.name;
-    productImg.setAttribute("src", product.imgPath);
-    productImg.addEventListener('click', handleClick);
-    productName.parentElement.id = product.id;
-    i++;
+render();
+
+function renderChart() {
+  let names = [];
+  let views = [];
+  let clicks = [];
+  for (let i = 0; i < allProducts.length; i++) {
+    names.push(allProducts[i].name);
+    views.push(allProducts[i].views);
+    clicks.push(allProducts[i].clicks);
   }
-}
-
-Product.getRandomProducts = function() {
-  let returnArray = [];
-  let randomIndexArray = [];
-  let productArray = this.products;
-  for (let i = 0; i < 3; i++) {
-    let exists = true;
-    while(exists) {
-      let index = randomProduct(0, productArray.length - 1);
-      if (!randomIndexArray.includes(index)) {
-        exists = false;
-        randomIndexArray.push(index);
-        returnArray.push(productArray[index]);
+  let chartStuff = {
+    type: 'bar',
+    data: {
+      labels: names,
+      datasets: [{
+        label: 'Views',
+        data: views,
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1
+      },
+      {
+        label: 'Clicks',
+        data: clicks,
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
       }
     }
-  }
-  return returnArray;
+  };
+  const ctx = document.getElementById('myChart').getContext('2d');
+  // eslint-disable-next-line no-undef
+  new Chart(ctx, chartStuff);
 }
-
-Product.renderResults = function() {
-  sortArray(this.products);
-  let ulElem = document.getElementById("result-ul");
-  toggleHidden("result-ul");
-  for (let product of this.products) {
-    let newLi = _createElement("li", ulElem);
-    let percentage;
-    if (product.displayed === 0) {
-      percentage = 0;
-    } else {
-      percentage = product.votedFor / product.displayed;
-      percentage *= 100;
-      percentage = round(percentage);
-    }
-    newLi.textContent = product.name + ": " + product.votedFor + " out of " + product.displayed + " shown. (" + percentage + "%)";
-  }
-}
-
-Product.prototype.incrementDisplay = function() {
-  this.displayed++;
-}
-
-Product.prototype.votedFor = function() {
-  this.votedFor++;
-}
-
-function randomProduct(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
-
-let newProducts = [
-  ["Bag", "img/bag.jpg"],
-  ["Banana", "img/banana.jpg"],
-  ["Bathroom", "img/bathroom.jpg"],
-  ["Boots", "img/boots.jpg"],
-  ["Breakfast", "img/breakfast.jpg"],
-  ["Bubblegum", "img/bubblegum.jpg"],
-  ["Chair", "img/chair.jpg"],
-  ["Cthulhu", "img/cthulhu.jpg"],
-  ["Dog Duck", "img/dog-duck.jpg"],
-  ["Dragon", "img/dragon.jpg"],
-  ["Pen", "img/pen.jpg"],
-  ["Pet Sweep", "img/pet-sweep.jpg"],
-  ["Scissors", "img/scissors.jpg"],
-  ["Shark", "img/shark.jpg"],
-  ["Sweep", "img/sweep.png"],
-  ["Tauntaun", "img/tauntaun.jpg"],
-  ["Unicorn", "img/unicorn.jpg"],
-  ["Water Can", "img/water-can.jpg"],
-  ["Wine Glass", "img/wine-glass.jpg"],
-];
-
-function createAProduct(name, url) {
-  Product.products.push(new Product(name, url));
-}
-
-function generateProducts() {
-  for (let i = 0; i < newProducts.length; i++) {
-    let product = newProducts[i];
-    let name = product[0];
-    let url = product[1];
-    createAProduct(name, url);
-  }
-}
-
-
-generateProducts();
-Product.renderProducts();
